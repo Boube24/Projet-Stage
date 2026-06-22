@@ -1,34 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="352adcfd-2b96-46f0-8928-46670cc17819" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Projet-Stage.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/citizen-complaints-platform/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/citizen-complaints-platform/.idea/citizen-complaints-platform.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/citizen-complaints-platform/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/citizen-complaints-platform/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/citizen-complaints-platform/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/citizen-complaints-platform/citizen-complaints-platform/.gitattributes" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/citizen-complaints-platform/citizen-complaints-platform/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/citizen-complaints-platform/citizen-complaints-platform/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/citizen-complaints-platform/citizen-complaints-platform/mvnw" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/citizen-complaints-platform/citizen-complaints-platform/mvnw.cmd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/citizen-complaints-platform/citizen-complaints-platform/pom.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/citizen-complaints-platform/citizen-complaints-platform/src/main/java/com/reclamation/citizen_complaints_platform/CitizenComplaintsPlatformApplication.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/citizen-complaints-platform/citizen-complaints-platform/src/main/java/com/reclamation/entity/role.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/citizen-complaints-platform/citizen-complaints-platform/src/main/resources/application.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/citizen-complaints-platform/citizen-complaints-platform/src/test/java/com/reclamation/citizen_complaints_platform/CitizenComplaintsPlatformApplicationTests.java" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -40,11 +30,14 @@
       </MavenGeneralSettings>
     </option>
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 4,
-  "fromUser": false
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4,
+  &quot;fromUser&quot;: false
+}</component>
   <component name="ProjectId" id="3FPDWci46wtI7qqEagdCY1hhIwE" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -53,12 +46,18 @@
   "keyToString": {
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "Spring Boot.CitizenComplaintsPlatformApplication.executor": "Run",
     "codeWithMe.voiceChat.enabledByDefault": "false",
+    "dart.analysis.tool.window.visible": "false",
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/HP/Projet-Stage"
+    "last_opened_file_path": "C:/Users/HP/Projet-Stage",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "show.migrate.to.gradle.popup": "false"
   }
 }]]></component>
   <component name="TaskManager">
