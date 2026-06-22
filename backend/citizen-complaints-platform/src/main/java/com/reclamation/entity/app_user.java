@@ -1,0 +1,34 @@
+package com.reclamation.entity;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "app_user")
+public class app_user {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String firstName;
+
+    private String lastName;
+
+    @Column(unique = true)
+    private String email;
+
+    private String phone;
+
+    private String password;
+
+    private Boolean enabled = true;
+
+    private LocalDateTime createdAt;
+
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private role role;
+
+    @ManyToOne
+    @JoinColumn(name = "service_id")
+    private Service2 service;
+}
