@@ -1,7 +1,9 @@
 package com.reclamation.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "app_user")
 public class app_user {
@@ -23,6 +25,11 @@ public class app_user {
     private Boolean enabled = true;
 
     private LocalDateTime createdAt;
+
+    @PrePersist
+    public void prePersist() {
+        createdAt = LocalDateTime.now();
+    }
 
     @ManyToOne
     @JoinColumn(name = "role_id")

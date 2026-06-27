@@ -1,7 +1,10 @@
 package com.reclamation.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "claim")
 public class Claim {
@@ -16,9 +19,9 @@ public class Claim {
 
     private String description;
 
-    private Double latitude;
+    private BigDecimal latitude;
 
-    private Double longitude;
+    private BigDecimal longitude;
 
     @Enumerated(EnumType.STRING)
     private ClaimStatus currentStatus;

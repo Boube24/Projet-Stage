@@ -1,7 +1,9 @@
 package com.reclamation.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import lombok.Data;
 
+@Data
 
 @Entity
 @Table(name = "status_history")
@@ -10,9 +12,11 @@ public class StatusHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String oldStatus;
+    @Enumerated(EnumType.STRING)
+    private ClaimStatus oldStatus;
 
-    private String newStatus;
+    @Enumerated(EnumType.STRING)
+    private ClaimStatus newStatus;
 
     private String comment;
 

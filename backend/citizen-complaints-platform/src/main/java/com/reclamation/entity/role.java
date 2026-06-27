@@ -1,7 +1,9 @@
 package com.reclamation.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "role")
 public class role {
