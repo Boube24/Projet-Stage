@@ -11,7 +11,8 @@ public class Media {
 
     private String url;
 
-    private String type;
+    @Enumerated(EnumType.STRING)
+    private MediaType type;
 
     private LocalDateTime uploadedAt;
 

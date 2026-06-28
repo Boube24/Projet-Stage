@@ -18,7 +18,10 @@ import com.reclamation.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional; // ممارسة فضلى للعمليات التي تعدل البيانات
+import com.reclamation.dto.claim.ClaimSummaryResponse;
+import com.reclamation.dto.claim.ClaimDetailsResponse;
 
+import java.util.List;
 import java.time.LocalDateTime;
 
 @Service
@@ -80,6 +83,76 @@ public class ClaimServiceImpl implements ClaimService {
         return mapToResponse(savedClaim);
     }
 
+    @Override
+    public List<ClaimSummaryResponse> getMyClaims(String userEmail) {
+
+        app_user citizen = userRepository.findByEmail(userEmail)
+                .orElseThrow(() ->
+                        new RuntimeException("Utilisateur introuvable"));
+
+        return claimRepository
+                .findByCitizenIdOrderByCreatedAtDesc(citizen.getId())
+                .stream()
+                .map(this::mapToSummaryResponse)
+                .toList();
+
+    }
+
+    @Override
+    public ClaimDetailsResponse getClaimDetails(
+            Long claimId,
+            String userEmail
+    ) {
+
+        app_user citizen = userRepository.findByEmail(userEmail)
+                .orElseThrow(() ->
+                        new RuntimeException("Utilisateur introuvable"));
+
+        Claim claim = claimRepository
+                .findByIdAndCitizenId(claimId, citizen.getId())
+                .orElseThrow(() ->
+                        new RuntimeException("Réclamation introuvable"));
+
+        return mapToDetailsResponse(claim);
+
+    }
+
+
+    private ClaimDetailsResponse mapToDetailsResponse(Claim claim) {
+
+        ClaimDetailsResponse response = new ClaimDetailsResponse();
+
+        response.setId(claim.getId());
+
+        response.setReference(claim.getReference());
+
+        response.setTitle(claim.getTitle());
+
+        response.setDescription(claim.getDescription());
+
+        response.setCurrentStatus(
+                claim.getCurrentStatus().name()
+        );
+
+        response.setLatitude(claim.getLatitude());
+
+        response.setLongitude(claim.getLongitude());
+
+        response.setCreatedAt(claim.getCreatedAt());
+
+        response.setUpdatedAt(claim.getUpdatedAt());
+
+        response.setCategoryName(
+                claim.getCategory().getName()
+        );
+
+        response.setCommuneName(
+                claim.getCommune().getName()
+        );
+
+        return response;
+
+    }
     /**
      * Conversion Entity -> DTO
      */
@@ -108,5 +181,33 @@ public class ClaimServiceImpl implements ClaimService {
         }
 
         return response;
+    }
+
+    private ClaimSummaryResponse mapToSummaryResponse(Claim claim) {
+
+        ClaimSummaryResponse response = new ClaimSummaryResponse();
+
+        response.setId(claim.getId());
+
+        response.setReference(claim.getReference());
+
+        response.setTitle(claim.getTitle());
+
+        response.setCurrentStatus(
+                claim.getCurrentStatus().name()
+        );
+
+        response.setCreatedAt(claim.getCreatedAt());
+
+        response.setCategoryName(
+                claim.getCategory().getName()
+        );
+
+        response.setCommuneName(
+                claim.getCommune().getName()
+        );
+
+        return response;
+
     }
 }

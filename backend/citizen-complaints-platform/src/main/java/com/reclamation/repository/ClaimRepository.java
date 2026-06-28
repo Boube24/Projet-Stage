@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ClaimRepository extends JpaRepository<Claim, Long> {
@@ -16,6 +17,8 @@ public interface ClaimRepository extends JpaRepository<Claim, Long> {
      */
     List<Claim> findByCitizen(app_user citizen);
 
+
+    List<Claim> findByCitizenIdOrderByCreatedAtDesc(Long citizenId);
     /**
      * Retourne toutes les réclamations selon leur statut.
      */
@@ -28,5 +31,7 @@ public interface ClaimRepository extends JpaRepository<Claim, Long> {
 
     @Query(value = "SELECT nextval('claim_reference_seq')", nativeQuery = true)
     Long getNextReferenceNumber();
+
+    Optional<Claim> findByIdAndCitizenId(Long id, Long citizenId);
 
 }
