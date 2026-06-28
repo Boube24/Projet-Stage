@@ -1,51 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import 'providers/auth_provider.dart';
+import 'package:mobile_flutter/core/theme/app_theme.dart';
 
-import 'screens/auth/login_screen.dart';
+import 'providers/auth_provider.dart';
+import 'providers/category_provider.dart';
+
+import 'screens/splash/splash_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
+
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+    ),
+  );
 
   runApp(
-
     MultiProvider(
-
       providers: [
-
         ChangeNotifierProvider(
           create: (_) => AuthProvider(),
         ),
-
         ChangeNotifierProvider(
           create: (_) => CategoryProvider(),
         ),
       ],
-
-      child:
-      const MyApp(),
+      child: const SawtiApp(),
     ),
   );
 }
 
-class MyApp
-    extends StatelessWidget {
-
-  const MyApp({
-    super.key,
-  });
+class SawtiApp extends StatelessWidget {
+  const SawtiApp({super.key});
 
   @override
-  Widget build(
-      BuildContext context) {
-
+  Widget build(BuildContext context) {
     return MaterialApp(
-
-      debugShowCheckedModeBanner:
-      false,
-
-      home:
-      const LoginScreen(),
+      title: 'SAWTI',
+      debugShowCheckedModeBanner: false,
+      theme: appTheme(),
+      home: const SplashScreen(),
     );
   }
 }
