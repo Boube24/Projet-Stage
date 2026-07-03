@@ -16,4 +16,6 @@ public interface ClaimService {
     List<ClaimSummaryResponse> getMyClaims(String userEmail);
 
     ClaimDetailsResponse getClaimDetails(Long claimId, String userEmail);
+
+
 }

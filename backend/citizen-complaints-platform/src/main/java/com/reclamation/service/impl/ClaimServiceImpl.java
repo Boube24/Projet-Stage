@@ -4,6 +4,7 @@ import com.reclamation.dto.claim.ClaimResponse;
 import com.reclamation.dto.claim.CreateClaimRequest;
 import com.reclamation.entity.Category;
 import com.reclamation.entity.Claim;
+import com.reclamation.entity.NotificationType;
 import com.reclamation.entity.ClaimStatus;
 import com.reclamation.entity.Commune;
 import com.reclamation.entity.app_user;
@@ -20,6 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional; // ممارسة فضلى للعمليات التي تعدل البيانات
 import com.reclamation.dto.claim.ClaimSummaryResponse;
 import com.reclamation.dto.claim.ClaimDetailsResponse;
+import com.reclamation.service.NotificationService;
+import com.reclamation.entity.StatusHistory;
+import com.reclamation.repository.StatusHistoryRepository;
 
 import java.util.List;
 import java.time.LocalDateTime;
@@ -33,7 +37,9 @@ public class ClaimServiceImpl implements ClaimService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final CommuneRepository communeRepository;
-    private final StatusHistoryService statusHistoryService; // <-- إصلاح الخطأ 1: تم إضافة الحقل المفقود هنا
+    private final StatusHistoryService statusHistoryService;
+
+    private final NotificationService notificationService; // <-- إصلاح الخطأ 1: تم إضافة الحقل المفقود هنا
 
     @Override
     @Transactional // ممارسة فضلى لضمان تراجع التغييرات في حال حدوث خطأ أثناء حفظ التاريخ
@@ -77,6 +83,22 @@ public class ClaimServiceImpl implements ClaimService {
                 ClaimStatus.NEW,
                 "Réclamation créée.",
                 citizen
+        );
+
+        notificationService.createNotification(
+
+                citizen,
+
+                savedClaim,
+
+                NotificationType.CLAIM_CREATED,
+
+                "Réclamation créée",
+
+                "Votre réclamation " +
+                        savedClaim.getReference() +
+                        " a été enregistrée avec succès."
+
         );
 
         // Conversion DTO
@@ -210,4 +232,6 @@ public class ClaimServiceImpl implements ClaimService {
         return response;
 
     }
+
+
 }

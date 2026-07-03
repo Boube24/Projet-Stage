@@ -1,7 +1,9 @@
 package com.reclamation.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import lombok.Data;
 
+@Data
 @Entity
 @Table(name = "notification")
 public class Notification {
@@ -20,4 +22,11 @@ public class Notification {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private app_user user;
+
+    @Enumerated(EnumType.STRING)
+    private NotificationType type;
+
+    @ManyToOne
+    @JoinColumn(name = "claim_id")
+    private Claim claim;
 }

@@ -1,4 +1,5 @@
 package com.reclamation.entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.Data;
@@ -26,6 +27,9 @@ public class app_user {
 
     private LocalDateTime createdAt;
 
+    @Column(length = 512)
+    private String fcmtoken;
+
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
@@ -33,9 +37,11 @@ public class app_user {
 
     @ManyToOne
     @JoinColumn(name = "role_id")
+    @JsonIgnore
     private role role;
 
     @ManyToOne
     @JoinColumn(name = "service_id")
+    @JsonIgnore
     private Service2 service;
 }

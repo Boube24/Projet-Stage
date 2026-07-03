@@ -34,4 +34,13 @@ public interface ClaimRepository extends JpaRepository<Claim, Long> {
 
     Optional<Claim> findByIdAndCitizenId(Long id, Long citizenId);
 
+    long countByCitizenId(Long citizenId);
+
+    long countByCitizenIdAndCurrentStatus(
+            Long citizenId,
+            ClaimStatus status);
+
+    List<Claim> findTop5ByCitizenIdOrderByCreatedAtDesc(
+            Long citizenId);
+
 }

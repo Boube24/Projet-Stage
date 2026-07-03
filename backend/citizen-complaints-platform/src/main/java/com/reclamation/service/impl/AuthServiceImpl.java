@@ -88,4 +88,20 @@ public class AuthServiceImpl implements AuthService {
                 user.getRole().getName()
         );
     }
+
+
+    @Override
+    public void updateFcmToken(
+            String email,
+            String token) {
+
+        app_user user =
+                userRepository.findByEmail(email)
+                        .orElseThrow(() ->
+                                new RuntimeException("Utilisateur introuvable"));
+
+        user.setFcmtoken(token);
+
+        userRepository.save(user);
+    }
 }

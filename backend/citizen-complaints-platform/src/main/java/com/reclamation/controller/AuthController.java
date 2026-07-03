@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import  com.reclamation.dto.auth.UserResponse;
 import org.springframework.security.core.Authentication;
+import com.reclamation.dto.auth.FcmTokenRequest;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -57,5 +58,26 @@ public class AuthController {
         return ResponseEntity.ok(
                 authService.getCurrentUser(
                         authentication.getName()));
+    }
+
+    @PutMapping("/fcm-token")
+    public ResponseEntity<MessageResponse> updateFcmToken(
+
+            @RequestBody
+            @Valid
+            FcmTokenRequest request,
+
+            Authentication authentication) {
+
+        authService.updateFcmToken(
+                authentication.getName(),
+                request.getToken()
+        );
+
+        return ResponseEntity.ok(
+                new MessageResponse(
+                        "FCM token updated successfully"
+                )
+        );
     }
 }

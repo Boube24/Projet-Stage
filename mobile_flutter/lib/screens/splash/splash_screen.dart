@@ -1,272 +1,482 @@
+import 'dart:math' as math;
 
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:mobile_flutter/core/theme/app_theme.dart';
-import 'package:mobile_flutter/screens/auth/login_screen.dart';
+import 'package:provider/provider.dart';
 
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+import '../../providers/auth_provider.dart';
+import '../auth/login_screen.dart';
+import '../home/home_page.dart';
+import '../../core/localization/app_localizations.dart';
+
+class SplashPage extends StatefulWidget {
+  const SplashPage({super.key});
+
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  State<SplashPage> createState() => _SplashPageState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashPageState extends State<SplashPage>
     with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _fade;
-  late Animation<double> _scale;
+
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  // Additional staggered animations for the premium UI redesign.
+  // These are purely visual and do not affect app logic or navigation.
+  late final Animation<double> _logoScaleAnimation;
+  late final Animation<double> _logoFadeAnimation;
+  late final Animation<Offset> _logoSlideAnimation;
+  late final Animation<double> _titleFadeAnimation;
+  late final Animation<Offset> _titleSlideAnimation;
+  late final Animation<double> _sloganFadeAnimation;
+  late final Animation<Offset> _sloganSlideAnimation;
+  late final Animation<double> _bottomFadeAnimation;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
-    _fade  = CurvedAnimation(parent: _ctrl, curve: Curves.easeIn);
-    _scale = Tween<double>(begin: 0.85, end: 1.0)
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutBack));
-    _ctrl.forward();
-    Timer(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
+
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+
+    // Logo: gentle scale + fade + slight upward settle, starts immediately.
+    _logoScaleAnimation = Tween<double>(begin: 0.82, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.55, curve: Curves.easeOutCubic),
+      ),
+    );
+    _logoFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
+      ),
+    );
+    _logoSlideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.0, 0.55, curve: Curves.easeOutCubic),
+          ),
         );
-      }
-    });
+
+    // App title: fades in shortly after the logo begins appearing.
+    _titleFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.30, 0.70, curve: Curves.easeOut),
+      ),
+    );
+    _titleSlideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.30, 0.70, curve: Curves.easeOutCubic),
+          ),
+        );
+
+    // Slogan: appears last among the top elements.
+    _sloganFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.50, 0.90, curve: Curves.easeOut),
+      ),
+    );
+    _sloganSlideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: const Interval(0.50, 0.90, curve: Curves.easeOutCubic),
+          ),
+        );
+
+    // Bottom emblem section fades in last.
+    _bottomFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: const Interval(0.45, 1.0, curve: Curves.easeOut),
+      ),
+    );
+
+    _controller.forward();
+
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+
+    await Future.delayed(
+      const Duration(seconds: 2),
+    );
+
+    final auth =
+    context.read<AuthProvider>();
+
+    await auth.checkAuthStatus();
+
+    if (!mounted) return;
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+        auth.isAuthenticated
+            ? const HomePage()
+            : const LoginPage(),
+      ),
+    );
   }
 
   @override
-  void dispose() { _ctrl.dispose(); super.dispose(); }
+  void dispose() {
+
+    _controller.dispose();
+
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final size = MediaQuery.of(context).size;
+
+    // Mauritanian-inspired premium dark green palette.
+    const Color deepGreen = Color(0xFF0B3D24);
+    const Color midGreen = Color(0xFF0E4A2B);
+    const Color gold = Color(0xFFD4A72C);
+
     return Scaffold(
+      backgroundColor: deepGreen,
       body: Stack(
-        fit: StackFit.expand,
         children: [
-          // ── Gradient background
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFF004D25), Color(0xFF001A0D)],
+          // Base premium gradient background.
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: RadialGradient(
+                  center: Alignment(0, -0.2),
+                  radius: 1.2,
+                  colors: [midGreen, deepGreen],
+                ),
               ),
             ),
           ),
 
-          // ── Mauritania map silhouette watermark
+          // Subtle Islamic geometric pattern overlay.
           Positioned.fill(
-            child: CustomPaint(painter: _MapWatermarkPainter()),
+            child: Opacity(
+              opacity: 0.06,
+              child: CustomPaint(
+                painter: _IslamicPatternPainter(color: gold),
+                size: size,
+              ),
+            ),
           ),
 
-          // ── Gold star constellation dots (decorative)
-          ..._starDots(),
+          // Decorative corner motifs, echoing the reference design.
+          Positioned(
+            top: 0,
+            left: 0,
+            child: Opacity(
+              opacity: 0.16,
+              child: CustomPaint(
+                painter: _CornerMotifPainter(color: gold),
+                size: const Size(120, 120),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: Transform.flip(
+              flipX: true,
+              child: Opacity(
+                opacity: 0.16,
+                child: CustomPaint(
+                  painter: _CornerMotifPainter(color: gold),
+                  size: const Size(120, 120),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            child: Transform.flip(
+              flipY: true,
+              child: Opacity(
+                opacity: 0.16,
+                child: CustomPaint(
+                  painter: _CornerMotifPainter(color: gold),
+                  size: const Size(120, 120),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: Transform.flip(
+              flipX: true,
+              flipY: true,
+              child: Opacity(
+                opacity: 0.16,
+                child: CustomPaint(
+                  painter: _CornerMotifPainter(color: gold),
+                  size: const Size(120, 120),
+                ),
+              ),
+            ),
+          ),
 
-          // ── Main content
+          // Foreground content.
           SafeArea(
-            child: Column(
-              children: [
-                const Spacer(flex: 2),
+            child: FadeTransition(
+              opacity: _animation,
+              child: Column(
+                children: [
+                  const Spacer(flex: 3),
 
-                // Logo + pin marker
-                FadeTransition(
-                  opacity: _fade,
-                  child: ScaleTransition(
-                    scale: _scale,
-                    child: Column(
-                      children: [
-                        // Location pin with logo
-                        Stack(
-                          alignment: Alignment.center,
+                  // Logo
+                  SlideTransition(
+                    position: _logoSlideAnimation,
+                    child: FadeTransition(
+                      opacity: _logoFadeAnimation,
+                      child: ScaleTransition(
+                        scale: _logoScaleAnimation,
+                        child: Image.asset(
+                          "assets/images/logo.png",
+                          width: 130,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 22),
+
+                  // App name
+                  SlideTransition(
+                    position: _titleSlideAnimation,
+                    child: FadeTransition(
+                      opacity: _titleFadeAnimation,
+                      child: Text(
+                        l.text("appName"),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 40,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // Slogan: Signalé. Suivez. Améliorez.
+                  SlideTransition(
+                    position: _sloganSlideAnimation,
+                    child: FadeTransition(
+                      opacity: _sloganFadeAnimation,
+                      child: RichText(
+                        textAlign: TextAlign.center,
+                        text: const TextSpan(
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                           children: [
-                            Icon(Icons.location_pin,
-                                size: 130, color: AppColors.accentGold),
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 20),
-                              child: _SawtiLogoIcon(size: 58),
+                            TextSpan(
+                              text: "Signalé. ",
+                              style: TextStyle(color: Color(0xFFE04B3F)),
+                            ),
+                            TextSpan(
+                              text: "Suivez. ",
+                              style: TextStyle(color: Color(0xFF3FAE5C)),
+                            ),
+                            TextSpan(
+                              text: "Améliorez.",
+                              style: TextStyle(color: Color(0xFFD4A72C)),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 24),
+                      ),
+                    ),
+                  ),
 
-                        // SAWTI lettering
-                        Text('SAWTI',
-                          style: TextStyle(
-                            fontSize: 48,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                            letterSpacing: 6,
-                            shadows: [
-                              Shadow(
-                                color: AppColors.accentGold.withOpacity(0.5),
-                                blurRadius: 20,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
+                  const Spacer(flex: 4),
 
-                        // Tagline – Signalez, Suivez, Améliorez
-                        RichText(
-                          text: const TextSpan(
-                            style: TextStyle(fontSize: 15, letterSpacing: 0.5),
-                            children: [
-                              TextSpan(text: 'Signalez. ', style: TextStyle(color: Colors.white70)),
-                              TextSpan(text: 'Suivez. ', style: TextStyle(color: Colors.white70)),
-                              TextSpan(text: 'Améliorez.',
-                                  style: TextStyle(color: AppColors.accentGold,
-                                      fontWeight: FontWeight.w700)),
-                            ],
-                          ),
-                        ),
+                  const CircularProgressIndicator(
+                    color: gold,
+                    strokeWidth: 2.4,
+                  ),
 
-                        const SizedBox(height: 12),
-                        // Gold divider stars
+                  const SizedBox(height: 32),
+
+                  // Bottom section: official emblem + republic name.
+                  FadeTransition(
+                    opacity: _bottomFadeAnimation,
+                    child: Column(
+                      children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.star, color: AppColors.accentGold, size: 14),
-                            const SizedBox(width: 8),
-                            Container(width: 60, height: 1,
-                                color: AppColors.accentGold.withOpacity(0.4)),
-                            const SizedBox(width: 8),
-                            const Icon(Icons.star, color: AppColors.accentGold, size: 14),
+                            Container(
+                              width: 70,
+                              height: 1,
+                              color: gold.withOpacity(0.5),
+                            ),
+                            Padding(
+                              padding:
+                              const EdgeInsets.symmetric(horizontal: 12),
+                              child: Image.asset(
+                                "assets/images/emblem.png",
+                                width: 40,
+                                height: 40,
+                              ),
+                            ),
+                            Container(
+                              width: 70,
+                              height: 1,
+                              color: gold.withOpacity(0.5),
+                            ),
                           ],
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          "République Islamique de Mauritanie",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "Plateforme citoyenne",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: gold.withOpacity(0.9),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                ),
 
-                const Spacer(flex: 2),
-
-                // Mauritanian flag wave
-                _FlagWaveDecoration(),
-
-                // Bottom label
-                Container(
-                  color: Colors.black.withOpacity(0.3),
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Column(
-                    children: const [
-                      Text('RÉPUBLIQUE ISLAMIQUE DE MAURITANIE',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white70, fontSize: 10,
-                          fontWeight: FontWeight.w600, letterSpacing: 1.5,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text('PLATEFORME CITOYENNE INTELLIGENTE',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: AppColors.accentGold, fontSize: 10,
-                          fontWeight: FontWeight.w700, letterSpacing: 2,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                  const SizedBox(height: 24),
+                ],
+              ),
             ),
           ),
         ],
       ),
     );
   }
-
-  List<Widget> _starDots() {
-    final positions = [
-      [0.1, 0.08], [0.85, 0.12], [0.25, 0.22], [0.7, 0.18],
-      [0.05, 0.45], [0.92, 0.35], [0.15, 0.65], [0.8, 0.6],
-    ];
-    return positions.map((p) => Positioned(
-      left: MediaQuery.of(context).size.width * p[0],
-      top: MediaQuery.of(context).size.height * p[1],
-      child: Container(
-        width: 3, height: 3,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: AppColors.accentGold.withOpacity(0.6),
-        ),
-      ),
-    )).toList();
-  }
 }
 
-// ── Shared logo icon (people inside location pin circle)
-class _SawtiLogoIcon extends StatelessWidget {
-  final double size;
-  const _SawtiLogoIcon({this.size = 48});
-  @override
-  Widget build(BuildContext context) => Container(
-    width: size, height: size,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      color: AppColors.primaryGreen,
-      border: Border.all(color: AppColors.accentGold, width: 2),
-    ),
-    child: Icon(Icons.people, color: Colors.white, size: size * 0.55),
-  );
-}
+/// Paints a very subtle repeating Islamic-inspired geometric pattern
+/// (interlocking eight-point stars) used as a low-opacity background texture.
+class _IslamicPatternPainter extends CustomPainter {
+  final Color color;
 
-// ── Flag wave decoration
-class _FlagWaveDecoration extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    height: 60,
-    child: CustomPaint(
-      painter: _FlagWavePainter(),
-      size: Size(MediaQuery.of(context).size.width, 60),
-    ),
-  );
-}
+  _IslamicPatternPainter({required this.color});
 
-class _FlagWavePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    // Green wave
-    final g = Paint()..color = AppColors.primaryGreen..style = PaintingStyle.fill;
-    final gPath = Path()
-      ..moveTo(0, 20)
-      ..quadraticBezierTo(size.width * 0.25, 0, size.width * 0.5, 20)
-      ..quadraticBezierTo(size.width * 0.75, 40, size.width, 20)
-      ..lineTo(size.width, 60) ..lineTo(0, 60) ..close();
-    canvas.drawPath(gPath, g);
-
-    // Red band
-    final r = Paint()..color = AppColors.flagRed..style = PaintingStyle.fill;
-    final rPath = Path()
-      ..moveTo(0, 38)
-      ..quadraticBezierTo(size.width * 0.25, 18, size.width * 0.5, 38)
-      ..quadraticBezierTo(size.width * 0.75, 58, size.width, 38)
-      ..lineTo(size.width, 60) ..lineTo(0, 60) ..close();
-    canvas.drawPath(rPath, r);
-  }
-  @override bool shouldRepaint(_) => false;
-}
-
-class _MapWatermarkPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    // Very faint map silhouette outline (simple Mauritania rough shape)
-    final p = Paint()
-      ..color = Colors.white.withOpacity(0.04)
+    final paint = Paint()
+      ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
+      ..strokeWidth = 1.0;
 
-    final path = Path()
-      ..moveTo(size.width * 0.25, size.height * 0.05)
-      ..lineTo(size.width * 0.75, size.height * 0.07)
-      ..lineTo(size.width * 0.82, size.height * 0.18)
-      ..lineTo(size.width * 0.8, size.height * 0.55)
-      ..lineTo(size.width * 0.72, size.height * 0.65)
-      ..lineTo(size.width * 0.5, size.height * 0.68)
-      ..lineTo(size.width * 0.2, size.height * 0.62)
-      ..lineTo(size.width * 0.15, size.height * 0.45)
-      ..lineTo(size.width * 0.22, size.height * 0.2)
-      ..close();
-    canvas.drawPath(path, p);
+    const double spacing = 60;
+
+    for (double y = -spacing; y < size.height + spacing; y += spacing) {
+      for (double x = -spacing; x < size.width + spacing; x += spacing) {
+        _drawStar(canvas, paint, Offset(x, y), spacing * 0.42);
+      }
+    }
   }
-  @override bool shouldRepaint(_) => false;
+
+  void _drawStar(Canvas canvas, Paint paint, Offset center, double radius) {
+    final path = Path();
+    const int points = 8;
+    for (int i = 0; i < points; i++) {
+      final double angleOuter = (i * 2 * math.pi) / points;
+      final double angleInner = angleOuter + (math.pi / points);
+      final Offset outer = Offset(
+        center.dx + radius * math.cos(angleOuter),
+        center.dy + radius * math.sin(angleOuter),
+      );
+      final Offset inner = Offset(
+        center.dx + (radius * 0.5) * math.cos(angleInner),
+        center.dy + (radius * 0.5) * math.sin(angleInner),
+      );
+      if (i == 0) {
+        path.moveTo(outer.dx, outer.dy);
+      } else {
+        path.lineTo(outer.dx, outer.dy);
+      }
+      path.lineTo(inner.dx, inner.dy);
+    }
+    path.close();
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _IslamicPatternPainter oldDelegate) => false;
+}
+
+/// Paints an elegant decorative corner flourish (arabesque-style corner motif)
+/// echoing the reference design's ornamental corners.
+class _CornerMotifPainter extends CustomPainter {
+  final Color color;
+
+  _CornerMotifPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+
+    final path = Path();
+    path.moveTo(0, size.height * 0.55);
+    path.quadraticBezierTo(
+      size.width * 0.15,
+      size.height * 0.15,
+      size.width * 0.55,
+      0,
+    );
+    canvas.drawPath(path, paint);
+
+    final path2 = Path();
+    path2.moveTo(0, size.height * 0.75);
+    path2.quadraticBezierTo(
+      size.width * 0.3,
+      size.height * 0.3,
+      size.width * 0.75,
+      0,
+    );
+    canvas.drawPath(path2, paint);
+
+    canvas.drawCircle(
+      Offset(size.width * 0.12, size.height * 0.12),
+      3,
+      Paint()..color = color,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _CornerMotifPainter oldDelegate) => false;
 }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "995001591132",
+    "project_id": "reclamation-d588f",
+    "storage_bucket": "reclamation-d588f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:995001591132:android:cdc8a238872604a3aa0d99",
+        "android_client_info": {
+          "package_name": "com.example.mobile_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqStSIkhIGRpY4HSR7Z_TlfGoCgUg590M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

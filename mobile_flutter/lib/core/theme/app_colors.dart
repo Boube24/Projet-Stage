@@ -1,21 +1,68 @@
-// import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
-// /// Palette de couleurs officielle de l'application.
-// ///
-// /// Centralisée ici pour garantir une charte graphique cohérente
-// /// sur tous les écrans (Splash, Login, Register, Home...).
-// /// À placer dans : lib/core/theme/app_colors.dart
-// class AppColors {
-//   AppColors._();
+class AppColors {
+  AppColors._();
 
-//   static const Color primary = Color(0xFF0B5FA5); // Bleu institutionnel
-//   static const Color primaryDark = Color(0xFF073A66);
-//   static const Color accent = Color(0xFF00A99D); // Teal (actions principales)
-//   static const Color background = Color(0xFFF4F6F9);
-//   static const Color textDark = Color(0xFF1C2733);
-//   static const Color textGrey = Color(0xFF7A8699);
-//   static const Color warning = Color(0xFFE8901C); // Statut "en attente"
-//   static const Color success = Color(0xFF1FA86A); // Statut "résolue"
-//   static const Color error = Color(0xFFE53935);
-//   static const Color inputFill = Color(0xFFF1F4F8);
-// }
+  // =========================
+  // Brand Colors (Sawti)
+  // =========================
+
+  /// Mauritanian Green
+  static const Color primary = Color(0xFF0B6B3A);
+
+  /// Light Green
+  static const Color primaryLight = Color(0xFF2E8B57);
+
+  /// Dark Green
+  static const Color primaryDark = Color(0xFF064A28);
+
+  /// Mauritanian Gold
+  static const Color accent = Color(0xFFD4AF37);
+
+  // =========================
+  // Status Colors
+  // =========================
+
+  static const Color success = Color(0xFF2E7D32);
+
+  /// Mauritanian Flag Red
+  static const Color error = Color(0xFFD62828);
+
+  static const Color warning = Color(0xFFD4AF37);
+
+  static const Color info = Color(0xFF1976D2);
+
+  // =========================
+  // Background
+  // =========================
+
+  static const Color background = Color(0xFFFDFBF7);
+
+  static const Color surface = Colors.white;
+
+  // =========================
+  // Text
+  // =========================
+
+  static const Color textPrimary = Color(0xFF1F2937);
+
+  static const Color textSecondary = Color(0xFF6B7280);
+
+  // =========================
+  // Border
+  // =========================
+
+  static const Color border = Color(0xFFE5E7EB);
+
+  // =========================
+  // Others
+  // =========================
+
+  static const Color disabled = Color(0xFFBDBDBD);
+
+  static const Color divider = Color(0xFFE5E7EB);
+
+  static const Color shadow = Color(0x14000000);
+
+  static const Color card = Colors.white;
+}

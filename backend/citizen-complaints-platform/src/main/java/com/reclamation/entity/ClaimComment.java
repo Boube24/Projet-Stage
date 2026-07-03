@@ -1,7 +1,9 @@
 package com.reclamation.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import lombok.Data;
 
+@Data
 
 @Entity
 @Table(name = "claim_comment")

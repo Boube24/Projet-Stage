@@ -22,18 +22,34 @@ class CategoryProvider extends ChangeNotifier {
 
   /// Charger toutes les catégories
   Future<void> loadCategories() async {
+
+    if (_categories.isNotEmpty) {
+      return;
+    }
+
     _isLoading = true;
+
     _errorMessage = null;
+
     notifyListeners();
 
     try {
-      _categories = await _categoryService.getCategories();
+
+      _categories =
+      await _categoryService.getCategories();
+
     } catch (e) {
+
       _errorMessage = e.toString();
+
     } finally {
+
       _isLoading = false;
+
       notifyListeners();
+
     }
+
   }
 
   /// Vider les données

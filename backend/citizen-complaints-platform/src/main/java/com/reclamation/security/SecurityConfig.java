@@ -43,7 +43,7 @@ public class SecurityConfig {
                 // 3. تحديد الصلاحيات للمسارات
                 .authorizeHttpRequests(auth -> auth
                         // السماح للجميع بزيارة مسارات التسجيل وتسجيل الدخول
-                        .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/register", "/api/auth/login","/uploads/**").permitAll()
                         // أي طلب آخر يتطلب تسجيل دخول (Authentication)
                         .anyRequest().authenticated()
                 )

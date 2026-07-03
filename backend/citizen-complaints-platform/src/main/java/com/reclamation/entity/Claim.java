@@ -1,4 +1,5 @@
 package com.reclamation.entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
@@ -32,6 +33,7 @@ public class Claim {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private app_user citizen;
 
     @ManyToOne

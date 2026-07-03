@@ -1,547 +1,465 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-// Imports المحلية الخاصة بالمشروع
 import '../../providers/auth_provider.dart';
-import 'package:mobile_flutter/core/theme/app_theme.dart';
-import 'package:mobile_flutter/screens/auth/register_screen.dart';
-import 'package:mobile_flutter/screens/home/home_screen.dart';
+import '../../widgets/app_dialog.dart';
+import '../home/home_page.dart';
+import 'register_page.dart';
+import '../../core/localization/app_localizations.dart';
+import '../../core/theme/app_colors.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final _emailCtrl = TextEditingController();
-  final _passCtrl = TextEditingController();
-  bool _obscure = true;
+class _LoginPageState extends State<LoginPage>
+    with SingleTickerProviderStateMixin {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
+  bool _obscurePassword = true;
+
+  late final AnimationController _animController;
+  late final Animation<double> _fadeAnim;
+  late final Animation<Offset> _slideAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+    _fadeAnim = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOut,
+    );
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, 0.05),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic));
+    _animController.forward();
+  }
 
   @override
   void dispose() {
-    _emailCtrl.dispose();
-    _passCtrl.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _animController.dispose();
     super.dispose();
+  }
+
+  Future<void> _login() async {
+    final l = AppLocalizations.of(context);
+    if (!_formKey.currentState!.validate()) return;
+
+    final auth = context.read<AuthProvider>();
+    try {
+      await auth.login(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      AppDialog.error(
+        context: context,
+        title: l.text('login'),
+        message: auth.error ?? l.text('login_failed'),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = context.watch<AuthProvider>();
-    final h = MediaQuery.of(context).size.height;
+    final l = AppLocalizations.of(context);
+    final auth = context.watch<AuthProvider>();
 
     return Scaffold(
-      backgroundColor: AppColors.cardWhite,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // ── Top hero illustration panel
-            _HeroPanel(height: h * 0.36),
-
-            // ── Form card
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 8),
-                  Text('Bienvenue !', style: AppTextStyles.heading2),
-                  const SizedBox(height: 4),
-                  Text('Connectez-vous pour continuer', style: AppTextStyles.body),
-                  const SizedBox(height: 24),
-
-                  // Email / Téléphone
-                  TextFormField(
-                    controller: _emailCtrl,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      hintText: 'Email ou téléphone',
-                      prefixIcon: Icon(Icons.person_outline),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // Mot de passe
-                  TextFormField(
-                    controller: _passCtrl,
-                    obscureText: _obscure,
-                    decoration: InputDecoration(
-                      hintText: 'Mot de passe',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscure
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                        ),
-                        onPressed: () => setState(() => _obscure = !_obscure),
-                      ),
-                    ),
-                  ),
-
-                  // Mot de passe oublié
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {},
-                      child: const Text(
-                        'Mot de passe oublié ?',
-                        style: TextStyle(color: AppColors.flagRed, fontSize: 13),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-
-                  // Bouton Se connecter
-                  ElevatedButton(
-                    onPressed: authProvider.isLoading
-                        ? null
-                        : () async {
-                      final provider = context.read<AuthProvider>();
-
-                      try {
-                        if (_emailCtrl.text.trim().isEmpty || _passCtrl.text.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Veuillez remplir tous les champs'),
-                            ),
-                          );
-                          return;
-                        }
-
-                        await provider.login(
-                          email: _emailCtrl.text.trim(),
-                          password: _passCtrl.text,
-                        );
-
-                        if (!mounted) return;
-
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const HomeScreen(),
-                          ),
-                        );
-                      } catch (e) {
-                        if (!mounted) return;
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(e.toString()),
-                          ),
-                        );
-                      }
-                    },
-                    child: authProvider.isLoading
-                        ? const SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                        : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Text('Se connecter'),
-                        SizedBox(width: 8),
-                        Icon(Icons.arrow_forward),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-                  _OrDivider(),
-                  const SizedBox(height: 16),
-
-                  // Google
-                  const _GoogleButton(label: 'Continuer avec Google'),
-
-                  const SizedBox(height: 24),
-
-                  // Pas de compte ?
-                  Center(
-                    child: RichText(
-                      text: TextSpan(
-                        style: AppTextStyles.body,
-                        children: [
-                          const TextSpan(text: "Vous n'avez pas de compte ? "),
-                          WidgetSpan(
-                            child: GestureDetector(
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const RegisterScreen(),
-                                ),
-                              ),
-                              child: const Text(
-                                'Créer un compte',
-                                style: TextStyle(
-                                  color: AppColors.primaryGreen,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
+      backgroundColor: AppColors.background,
+      body: Stack(
+        children: [
+          // خلفية إسلامية خفيفة جداً تضفي طابع الهوية الهادئ
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: 0.03,
+                child: CustomPaint(
+                  painter: _IslamicPatternPainter(color: AppColors.primary),
+                  size: Size.infinite,
+                ),
               ),
             ),
-          ],
+          ),
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 440),
+                  child: FadeTransition(
+                    opacity: _fadeAnim,
+                    child: SlideTransition(
+                      position: _slideAnim,
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 24), // مساحة علوية للتنفس البصري
+
+                            // اسم التطبيق بهيئة الشعار النصي (Wordmark)
+                            Text(
+                              'Sawti',
+                              style: TextStyle(
+                                fontSize: 36, // زيادة الحجم لتعويض غياب الشعار
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.primary,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Votre voix, notre engagement',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.accent,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+
+                            const SizedBox(height: 48),
+
+                            // قسم الترحيب
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                l.text('login'),
+                                style: TextStyle(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                l.text('welcome'),
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 32),
+
+                            // حقل البريد الإلكتروني المحسّن
+                            _PremiumTextField(
+                              controller: _emailController,
+                              label: l.text('email'),
+                              icon: Icons.person_outline,
+                              keyboardType: TextInputType.emailAddress,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return l.text('email_ob');
+                                }
+                                return null;
+                              },
+                            ),
+
+                            const SizedBox(height: 18),
+
+                            // حقل كلمة المرور المحسّن
+                            _PremiumTextField(
+                              controller: _passwordController,
+                              label: l.text('password'),
+                              icon: Icons.lock_outline,
+                              obscureText: _obscurePassword,
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                  color: AppColors.textSecondary,
+                                  size: 20,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return l.text('password_ob');
+                                }
+                                return null;
+                              },
+                            ),
+
+                            const SizedBox(height: 12),
+
+                            // استعادة كلمة المرور
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: const Size(0, 0),
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                onPressed: () {},
+                                child: Text(
+                                  'Mot de passe oublié ?',
+                                  style: TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 32),
+
+                            // زر الدخول المحدث بانحناء متناسق
+                            _PremiumButton(
+                              text: l.text('connecter'),
+                              isLoading: auth.isLoading,
+                              onPressed: _login,
+                            ),
+
+                            const SizedBox(height: 40),
+
+                            // الانتقال لإنشاء حساب
+                            Column(
+                              children: [
+                                Text(
+                                  "Vous n'avez pas de compte ?",
+                                  style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 13.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                TextButton(
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    minimumSize: const Size(0, 0),
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => const RegisterPage(),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    l.text('new_compte'),
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14.5,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PremiumTextField extends StatelessWidget {
+  const _PremiumTextField({
+    required this.controller,
+    required this.label,
+    required this.icon,
+    this.obscureText = false,
+    this.keyboardType,
+    this.suffixIcon,
+    this.validator,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final IconData icon;
+  final bool obscureText;
+  final TextInputType? keyboardType;
+  final Widget? suffixIcon;
+  final String? Function(String?)? validator;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16), // توحيد الانحناء مع الأزرار
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow.withOpacity(0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        obscureText: obscureText,
+        keyboardType: keyboardType,
+        validator: validator,
+        style: TextStyle(color: AppColors.textPrimary, fontSize: 15),
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: AppColors.surface,
+          hintText: label,
+          hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 14.5),
+          prefixIcon: Icon(icon, color: AppColors.textSecondary, size: 21),
+          suffixIcon: suffixIcon,
+          contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: AppColors.border, width: 1),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: AppColors.border, width: 1),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: AppColors.primary, width: 1.6), // إضاءة واضحة عند التركيز
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: AppColors.error, width: 1.2),
+          ),
         ),
       ),
     );
   }
 }
 
-// ── Hero illustration with Mauritania city silhouette + category bubbles
-class _HeroPanel extends StatelessWidget {
-  final double height;
-  const _HeroPanel({required this.height});
-
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    height: height,
-    child: Stack(
-      fit: StackFit.expand,
-      children: [
-        // Gradient sky
-        Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFFF5F0E0), Color(0xFFE8E0CC)],
-            ),
-          ),
-        ),
-
-        // City silhouette
-        Positioned.fill(child: CustomPaint(painter: _CitySilhouettePainter())),
-
-        // Mauritanian flag (top right)
-        Positioned(
-          top: 36,
-          right: 24,
-          child: _MiniFlag(),
-        ),
-
-        // Category bubble – Voirie (top-left)
-        Positioned(
-          top: 60,
-          left: 28,
-          child: _CategoryBubble(
-            icon: Icons.construction,
-            label: 'VOIRIE',
-            color: AppColors.voirie,
-          ),
-        ),
-
-        // Category bubble – Électricité (top-right offset)
-        Positioned(
-          top: 55,
-          right: 80,
-          child: _CategoryBubble(
-            icon: Icons.bolt,
-            label: 'ÉLECTRICITÉ',
-            color: AppColors.electricite,
-          ),
-        ),
-
-        // Category bubble – Eau (bottom-left)
-        Positioned(
-          bottom: 48,
-          left: 20,
-          child: _CategoryBubble(
-            icon: Icons.water_drop,
-            label: 'EAU',
-            color: AppColors.eau,
-            size: 44,
-          ),
-        ),
-
-        // Category bubble – Environnement (bottom-right)
-        Positioned(
-          bottom: 44,
-          right: 24,
-          child: _CategoryBubble(
-            icon: Icons.eco,
-            label: 'ENVIRONNEMENT',
-            color: AppColors.environnement,
-            size: 44,
-          ),
-        ),
-
-        // Central phone mockup circle
-        Center(
-          child: Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.primaryGreen,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primaryGreen.withOpacity(0.4),
-                  blurRadius: 20,
-                  spreadRadius: 4,
-                )
-              ],
-            ),
-            child: const Icon(Icons.people, color: Colors.white, size: 40),
-          ),
-        ),
-
-        // Bottom flag wave
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: SizedBox(
-            height: 32,
-            width: double.infinity,
-            child: CustomPaint(painter: _SmallWavePainter()),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-class _CategoryBubble extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final double size;
-
-  const _CategoryBubble({
-    required this.icon,
-    required this.label,
-    required this.color,
-    this.size = 48,
+class _PremiumButton extends StatelessWidget {
+  const _PremiumButton({
+    required this.text,
+    required this.isLoading,
+    required this.onPressed,
   });
 
-  @override
-  Widget build(BuildContext context) => Column(
-    children: [
-      Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: color,
-          boxShadow: [
-            BoxShadow(color: color.withOpacity(0.3), blurRadius: 8)
-          ],
-        ),
-        child: Icon(icon, color: Colors.white, size: size * 0.48),
-      ),
-      const SizedBox(height: 4),
-      Text(
-        label,
-        style: const TextStyle(
-          fontSize: 8,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textDark,
-        ),
-      ),
-    ],
-  );
-}
+  final String text;
+  final bool isLoading;
+  final VoidCallback onPressed;
 
-class _MiniFlag extends StatelessWidget {
   @override
-  Widget build(BuildContext context) => Container(
-    width: 36,
-    height: 24,
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(2),
-      boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
-    ),
-    child: Column(
-      children: [
-        Expanded(flex: 1, child: Container(color: AppColors.flagRed)),
-        Expanded(
-          flex: 2,
-          child: Container(
-            color: AppColors.primaryGreen,
-            child: const Center(
-              child: Text('☽⭐', style: TextStyle(fontSize: 8)),
-            ),
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 56,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16), // توحيد الانحناء البصري
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryDark.withOpacity(0.24),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
-        ),
-        Expanded(flex: 1, child: Container(color: AppColors.flagRed)),
-      ],
-    ),
-  );
-}
-
-class _OrDivider extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => Row(
-    children: [
-      const Expanded(child: Divider()),
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Text('OU', style: AppTextStyles.label),
+        ],
       ),
-      const Expanded(child: Divider()),
-    ],
-  );
-}
-
-class _GoogleButton extends StatelessWidget {
-  final String label;
-  const _GoogleButton({required this.label});
-
-  @override
-  Widget build(BuildContext context) => OutlinedButton(
-    onPressed: () {},
-    style: OutlinedButton.styleFrom(
-      minimumSize: const Size(double.infinity, 52),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-      side: const BorderSide(color: AppColors.inputBorder, width: 1.5),
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const _GoogleLogo(),
-        const SizedBox(width: 10),
-        Text(
-          label,
+      child: ElevatedButton(
+        onPressed: isLoading ? null : onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryDark,
+          disabledBackgroundColor: AppColors.primaryDark.withOpacity(0.7),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 0,
+        ),
+        child: isLoading
+            ? const SizedBox(
+          height: 22,
+          width: 22,
+          child: CircularProgressIndicator(
+            strokeWidth: 2.4,
+            color: Colors.white,
+          ),
+        )
+            : Text(
+          text,
           style: const TextStyle(
-            fontSize: 15,
-            color: AppColors.textDark,
-            fontWeight: FontWeight.w500,
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.3,
           ),
         ),
-      ],
-    ),
-  );
-}
-
-class _GoogleLogo extends StatelessWidget {
-  const _GoogleLogo();
-
-  @override
-  Widget build(BuildContext context) => const SizedBox(
-    width: 22,
-    height: 22,
-    child: CustomPaint(painter: _GoogleLogoPainter()),
-  );
-}
-
-class _GoogleLogoPainter extends CustomPainter {
-  const _GoogleLogoPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final c = size.center(Offset.zero);
-    final r = size.width / 2;
-    final paint = Paint()..style = PaintingStyle.fill;
-
-    // Blue
-    paint.color = const Color(0xFF4285F4);
-    canvas.drawArc(Rect.fromCircle(center: c, radius: r), -1.1, 1.8, true, paint);
-    // Red
-    paint.color = const Color(0xFFEA4335);
-    canvas.drawArc(Rect.fromCircle(center: c, radius: r), -1.9, -1.4, true, paint);
-    // Yellow
-    paint.color = const Color(0xFFFBBC05);
-    canvas.drawArc(Rect.fromCircle(center: c, radius: r), 2.2, 1.0, true, paint);
-    // Green
-    paint.color = const Color(0xFF34A853);
-    canvas.drawArc(Rect.fromCircle(center: c, radius: r), 0.6, 1.6, true, paint);
-    // White inner circle
-    paint.color = Colors.white;
-    canvas.drawCircle(c, r * 0.6, paint);
-    // "G" bar
-    paint.color = const Color(0xFF4285F4);
-    canvas.drawRect(Rect.fromLTWH(c.dx, c.dy - r * 0.12, r * 0.9, r * 0.24), paint);
+      ),
+    );
   }
-
-  @override
-  bool shouldRepaint(_) => false;
 }
 
-class _CitySilhouettePainter extends CustomPainter {
+class _IslamicPatternPainter extends CustomPainter {
+  _IslamicPatternPainter({required this.color});
+  final Color color;
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.primaryGreen.withOpacity(0.15)
-      ..style = PaintingStyle.fill;
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.1;
 
-    final path = Path()
-      ..moveTo(0, size.height)
-      ..lineTo(0, size.height * 0.65)
-      ..lineTo(size.width * 0.08, size.height * 0.65)
-      ..lineTo(size.width * 0.08, size.height * 0.5)
-      ..lineTo(size.width * 0.12, size.height * 0.5)
-      ..lineTo(size.width * 0.12, size.height * 0.4)
-      ..lineTo(size.width * 0.16, size.height * 0.4)
-      ..lineTo(size.width * 0.16, size.height * 0.6)
-      ..lineTo(size.width * 0.22, size.height * 0.6)
-      ..lineTo(size.width * 0.22, size.height * 0.35)
-      ..lineTo(size.width * 0.25, size.height * 0.3)
-      ..lineTo(size.width * 0.28, size.height * 0.35)
-      ..lineTo(size.width * 0.28, size.height * 0.55)
-      ..lineTo(size.width * 0.35, size.height * 0.55)
-      ..lineTo(size.width * 0.35, size.height * 0.45)
-      ..lineTo(size.width * 0.4, size.height * 0.38)
-      ..lineTo(size.width * 0.45, size.height * 0.45)
-      ..lineTo(size.width * 0.45, size.height * 0.55)
-      ..lineTo(size.width * 0.55, size.height * 0.55)
-      ..lineTo(size.width * 0.55, size.height * 0.42)
-      ..lineTo(size.width * 0.6, size.height * 0.35)
-      ..lineTo(size.width * 0.65, size.height * 0.42)
-      ..lineTo(size.width * 0.65, size.height * 0.55)
-      ..lineTo(size.width * 0.72, size.height * 0.55)
-      ..lineTo(size.width * 0.72, size.height * 0.48)
-      ..lineTo(size.width * 0.78, size.height * 0.48)
-      ..lineTo(size.width * 0.78, size.height * 0.62)
-      ..lineTo(size.width * 0.85, size.height * 0.62)
-      ..lineTo(size.width * 0.85, size.height * 0.5)
-      ..lineTo(size.width * 0.9, size.height * 0.42)
-      ..lineTo(size.width * 0.95, size.height * 0.5)
-      ..lineTo(size.width, size.height * 0.5)
-      ..lineTo(size.width, size.height)
-      ..close();
+    const double tile = 64;
+    for (double y = -tile; y < size.height + tile; y += tile) {
+      for (double x = -tile; x < size.width + tile; x += tile) {
+        _drawStar(canvas, Offset(x, y), tile * 0.42, paint);
+      }
+    }
+  }
+
+  void _drawStar(Canvas canvas, Offset center, double radius, Paint paint) {
+    const points = 8;
+    final path = Path();
+    for (int i = 0; i < points * 2; i++) {
+      final angle = (pi / points) * i;
+      final r = i.isEven ? radius : radius * 0.5;
+      final dx = center.dx + r * cos(angle);
+      final dy = center.dy + r * sin(angle);
+      if (i == 0) {
+        path.moveTo(dx, dy);
+      } else {
+        path.lineTo(dx, dy);
+      }
+    }
+    path.close();
     canvas.drawPath(path, paint);
   }
 
   @override
-  bool shouldRepaint(_) => false;
-}
-
-class _SmallWavePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final g = Paint()..color = AppColors.primaryGreen;
-    final gPath = Path()
-      ..moveTo(0, size.height * 0.5)
-      ..quadraticBezierTo(size.width * 0.25, 0, size.width * 0.5, size.height * 0.5)
-      ..quadraticBezierTo(size.width * 0.75, size.height, size.width, size.height * 0.5)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
-    canvas.drawPath(gPath, g);
-
-    final r = Paint()..color = AppColors.flagRed;
-    final rPath = Path()
-      ..moveTo(0, size.height * 0.8)
-      ..quadraticBezierTo(size.width * 0.25, size.height * 0.3, size.width * 0.5, size.height * 0.8)
-      ..quadraticBezierTo(size.width * 0.75, size.height * 1.3, size.width, size.height * 0.8)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
-    canvas.drawPath(rPath, r);
-  }
-
-  @override
-  bool shouldRepaint(_) => false;
+  bool shouldRepaint(covariant _IslamicPatternPainter oldDelegate) => false;
 }

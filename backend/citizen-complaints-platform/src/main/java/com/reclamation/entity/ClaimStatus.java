@@ -12,6 +12,7 @@ public enum ClaimStatus {
     RESOLVED,
 
     CLOSED,
+    CANCELLED,
 
     REJECTED
 }

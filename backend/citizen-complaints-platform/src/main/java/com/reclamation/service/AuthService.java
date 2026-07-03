@@ -12,4 +12,9 @@ public interface AuthService {
 
     UserResponse getCurrentUser(
             String email);
+
+    void updateFcmToken(
+            String email,
+            String token
+    );
 }

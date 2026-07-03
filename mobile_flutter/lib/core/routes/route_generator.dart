@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../screens/auth/login_screen.dart';
-import '../../screens/auth/register_screen.dart';
-import '../../screens/home/home_screen.dart';
+import '../../screens/auth/register_page.dart';
+import '../../screens/home/home_page.dart';
 import '../../screens/splash/splash_screen.dart';
-import 'app_routes.dart';
 
 class RouteGenerator {
 
@@ -16,25 +15,25 @@ class RouteGenerator {
       case AppRoutes.login:
         return MaterialPageRoute(
           builder: (_) =>
-          const LoginScreen(),
+          const LoginPage(),
         );
 
       case AppRoutes.register:
         return MaterialPageRoute(
           builder: (_) =>
-          const RegisterScreen(),
+          const RegisterPage(),
         );
 
       case AppRoutes.home:
         return MaterialPageRoute(
           builder: (_) =>
-          const HomeScreen(),
+          const HomePage(),
         );
 
       default:
         return MaterialPageRoute(
           builder: (_) =>
-          const SplashScreen(),
+          const SplashPage(),
         );
     }
   }
