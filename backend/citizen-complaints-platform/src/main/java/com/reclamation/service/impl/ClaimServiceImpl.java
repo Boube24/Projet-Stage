@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional; // ممارسة
 import com.reclamation.dto.claim.ClaimSummaryResponse;
 import com.reclamation.dto.claim.ClaimDetailsResponse;
 import com.reclamation.service.NotificationService;
+import com.reclamation.service.AssignmentService;
 import com.reclamation.entity.StatusHistory;
 import com.reclamation.repository.StatusHistoryRepository;
 
@@ -38,6 +39,7 @@ public class ClaimServiceImpl implements ClaimService {
     private final CategoryRepository categoryRepository;
     private final CommuneRepository communeRepository;
     private final StatusHistoryService statusHistoryService;
+    private final AssignmentService AssignmentService;
 
     private final NotificationService notificationService; // <-- إصلاح الخطأ 1: تم إضافة الحقل المفقود هنا
 
@@ -75,6 +77,8 @@ public class ClaimServiceImpl implements ClaimService {
 
         // Sauvegarde de la réclamation
         Claim savedClaim = claimRepository.save(claim);
+
+        AssignmentService.assignClaimAutomatically(claim);
 
         // Sauvegarde de l'historique du statut
         statusHistoryService.saveStatusHistory(
